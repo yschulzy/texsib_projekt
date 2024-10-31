@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script type="text/javascript" src="{{ url_for('static', filename='js/index.js') }}"></script>
+    <title>Ziele Tabelle</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f8f9fa;
+        }
+        .container {
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: left;
+            color: #333;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        table, th, td {
+            border: 1px solid #ddd;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
+        th {
+            background-color: #f1f1f1;
+        }
+        input[type="text"], input[type="number"], select {
+            width: 100%;
+            padding: 5px;
+            box-sizing: border-box;
+        }
+        .btn {
+            padding: 8px 12px;
+            margin: 10px 5px;
+            background-color: #d9534f;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn:hover {
+            background-color: #c9302c;
+        }
+        .actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+        /* Modal styles */
+        .modal {
+            display: none; /* Hidden by default */
+            position: fixed; /* Stay in place */
+            z-index: 1; /* Sit on top */
+            left: 0;
+            top: 0;
+            width: 100%; /* Full width */
+            height: 100%; /* Full height */
+            overflow: auto; /* Enable scroll if needed */
+            background-color: rgb(0,0,0); /* Fallback color */
+            background-color: rgba(0,0,0,0.4); /* Black w/ opacity */
+            padding-top: 60px; /* Location of the box */
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto; /* 15% from the top and centered */
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; /* Could be more or less, depending on screen size */
+            border-radius: 8px;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>TEX 10 Tabelle</h1>
+    <button class="btn" id="addGoalBtn">Ziel hinzufügen</button>
+    <button class="btn">Grafische Auswertung</button>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Abteilung</th>
+                <th>Aussage</th>
+                <th>Kriterien</th>
+                <th>Bewertung</th>
+                <th>Kommentar</th>
+                <th>zuletzt geändert</th>
+                <th>Änderer</th>
+                <th>Anregung</th>
+                <th>Aktionen</th>
+            </tr>
+            
+            <tr>
+                <th><input type="text" placeholder="Suche"></th>
+                <th><input type="text" placeholder="Suche"></th>
+                <th><input type="text" placeholder="Suche"></th>
+                <th></th>
+                <th><input type="text" placeholder="Suche"></th>
+                <th></th>
+                <th><input type="text" placeholder="Suche"></th>
+                <th><input type="text" placeholder="Suche"></th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for ziel in ziele %}
+            <tr>
+                <td data-abteilungsid="{{ ziel.abteilungsid }}">{{ ziel.abteilungsname }}</td>
+                <td>{{ ziel.aussage }}</td>
+                <td>{{ ziel.kriterien }}</td>
+                <td>{{ ziel.bewertung }}</td>
+                <td>{{ ziel.kommentar }}</td>
+                <td>{{ ziel.letzteaenderung.strftime('%d.%m.%Y') }}</td>
+                <td>{{ ziel.geandertvon }}</td>
+                <td>{{ ziel.anregung }}</td>
+                <td class="actions">
+                    <button title="Bearbeiten" onclick="openModal({{ ziel.abteilungsid }}, '{{ ziel.aussage }}', '{{ ziel.kriterien }}', {{ ziel.bewertung }}, '{{ ziel.kommentar }}', '{{ ziel.geandertvon }}')">✏️</button>
+                    <button title="Löschen">🗑️</button>
+                    <button title="Historie anzeigen">🔄</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- Modal für das Hinzufügen eines Ziels -->
+<div id="goalModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Ziel hinzufügen</h2>
+        <form id="addZielForm" method="POST" action="{{ url_for('ziel.add_ziel') }}">
+            <label for="abteilungsid">Abteilung:</label>
+            <select id="abteilungsid" name="abteilungsid" required>
+                {% for abteilung in abteilungen %}
+                <option value="{{ abteilung.id }}">{{ abteilung.name }}</option>
+                {% endfor %}
+            </select>
+            
+            <label for="aussage">Aussage:</label>
+            <input type="text" id="aussage" name="aussage" required>
+            <label for="kriterien">Kriterien:</label>
+            <input type="text" id="kriterien" name="kriterien" required>
+            <label for="bewertung">Bewertung:</label>
+            <input type="number" id="bewertung" name="bewertung" required>
+            <label for="kommentar">Kommentar:</label>
+            <input type="text" id="kommentar" name="kommentar">
+            <label for="geaendertvon">Geändert von:</label>
+            <input type="text" id="geaendertvon" name="geaendertvon" required>
+            <button type="submit">Speichern</button>
+        </form>
+    </div>
+</div>
+
+<!-- Modal für das Hinzufügen eines Ziels -->
+<div id="goalModal" class="modal">
+    <div class="modal-content">
+        <span class="close">&times;</span>
+        <h2>Ziel hinzufügen</h2>
+        <form id="addZielForm" method="POST" action="{{ url_for('ziel.add_ziel') }}">
+            <label for="abteilungsid">Abteilung:</label>
+            <select id="abteilungsid" name="abteilungsid" required>
+                {% for abteilung in abteilungen %}
+                <option value="{{ abteilung.id }}">{{ abteilung.name }}</option>
+                {% endfor %}
+            </select>
+            
+            <label for="aussage">Aussage:</label>
+            <input type="text" id="aussage" name="aussage" required>
+            <label for="kriterien">Kriterien:</label>
+            <input type="text" id="kriterien" name="kriterien" required>
+            <label for="bewertung">Bewertung:</label>
+            <input type="number" id="bewertung" name="bewertung" required>
+            <label for="kommentar">Kommentar:</label>
+            <input type="text" id="kommentar" name="kommentar">
+            <label for="geaendertvon">Geändert von:</label>
+            <input type="text" id="geaendertvon" name="geaendertvon" required>
+            <button type="submit">Speichern</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>
+
+

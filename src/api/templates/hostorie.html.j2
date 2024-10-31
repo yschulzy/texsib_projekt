@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historie für Abteilung ID</title>
+    <style>
+        /* Dein bestehender CSS-Stil hier */
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Historie Übersicht für Abteilung</h1>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Änderer</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for historie in historien %}
+                <tr>
+                    <td>{{ historie.geandertvon }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <a href="{{ url_for('ziel.index') }}">Zurück zur Übersicht</a>
+</div>
+
+</body>
+</html>
